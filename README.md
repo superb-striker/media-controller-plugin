@@ -2,7 +2,7 @@
 
 An artwork-first media widget for the Omarchy bar. Keep the essentials in the
 bar, hover over the song title for a quick look, or click the preview to pin
-full controls. It works with **kew**, mpv, and other players that expose MPRIS.
+full controls. It works with [**kew**](https://www.kewplayer.com/), mpv, and other players that expose MPRIS.
 
 ![Compact now-playing controls in the Omarchy bar](screenshots/compact-bar.png)
 
@@ -10,7 +10,7 @@ full controls. It works with **kew**, mpv, and other players that expose MPRIS.
 
 Hovering over the title opens a small artwork-led preview. Moving away closes
 it; clicking the preview pins the larger player until you click outside or
-press Escape. There is no growing animation.
+press Escape.
 
 <img src="screenshots/hover-preview.png" alt="Artwork-led hover preview with song details and playback controls" width="570">
 
@@ -22,7 +22,7 @@ previous and upcoming tracks.
 
 ## Made for kew, without being tied to it
 
-kew exposes MPRIS TrackList, so you can browse its current list and jump
+[kew](https://www.kewplayer.com/) exposes MPRIS TrackList, so you can browse its current list and jump
 directly to a track from the popup. If kew and another player are running,
 source chips let you choose which one this widget controls. Separate
 instances of the same player are listed individually.
@@ -43,10 +43,9 @@ The five popup controls are **previous · back 10s · play/pause · forward 10s 
 next**. Unsupported actions are disabled, not sent blindly. The progress bar
 is clickable only when the selected player supports seeking.
 
-Artwork fills the preview and softly colors its background. If there is no
-artwork, a media placeholder appears and the background returns to the
-current Omarchy theme. Local cover files next to a song are also considered
-when the player does not supply art.
+Artwork fills the preview and softly colors its background. 
+If there is no artwork, a media placeholder appears and the background returns to the current Omarchy theme. 
+Local cover files next to a song are also considered when the player does not supply art.
 
 ## Install
 
@@ -67,10 +66,7 @@ After the repository is published at the URL below, the same install is:
 omarchy plugin add https://github.com/superb-striker/media-controller-plugin.git --enable
 ```
 
-The widget is placed in the right bar section by default. If you already use
-the older manual `media-prev`, `media-play-pause`, `media-next`, and
-`media-title` widgets, remove those bar entries to avoid duplicates. This
-plugin does not alter your existing bar configuration for you.
+The widget is placed in the right bar section by default, which can be changed in `~/.config/omarchy/shell.json`
 
 ## Optional mpv playlist support
 
@@ -121,5 +117,7 @@ Removing the plugin does not change your mpv configuration.
 
 ## License
 
-MIT. The music and artwork visible in the screenshots belong to their
+MIT. 
+
+The music and artwork visible in the screenshots belong to their
 respective creators and are shown only to demonstrate the interface.
