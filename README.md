@@ -2,7 +2,7 @@
 
 An artwork-focused bar widget for MPRIS media players. Hover for a compact
 preview; click the preview to pin a larger view with source selection and a
-track list. The backend ships in this repository and starts with the plugin.
+track list. The service ships as Quickshell code in this repository.
 
 ## Features
 
@@ -13,24 +13,16 @@ track list. The backend ships in this repository and starts with the plugin.
 - Shows album art when available and falls back to the current Omarchy theme.
 - Uses mpv IPC, when configured, for mpv's playlist and local artwork fallback.
   Other players work through MPRIS without mpv.
-- Runs one event-driven Python backend for the whole plugin, including multiple
-  monitors.
+- Runs one Quickshell service for the whole plugin, including multiple monitors.
 
 ## Requirements
 
 - Omarchy Quattro with plugin support
-- Python 3, `python-dbus`, and `python-gobject`
 - An MPRIS-compatible media player
 
-On Omarchy, install the Python bindings once:
-
-```bash
-omarchy pkg add python python-dbus python-gobject
-```
-
-The Python backend source is bundled with the plugin. Omarchy's plugin manager
-clones and validates repositories; it does not run install hooks or install
-system packages, so the Python runtime bindings remain a system dependency.
+No extra package installation is needed on Omarchy. Quickshell handles normal
+MPRIS controls, and the service uses Omarchy's existing `busctl` (from
+systemd) for MPRIS TrackList, which Quickshell does not expose.
 
 ## Install
 
@@ -83,15 +75,14 @@ path.
   selected player does not report `CanSeek`.
 
 The selected source is stored in the user runtime directory while the session
-is active. To override that location, set `MEDIA_CONTROLLER_SELECTION_FILE`.
+is active.
 
 ## Development
 
 The plugin is composed of `BarWidget.qml`, `Preview.qml`, and `Service.qml`.
-`Service.qml` launches the bundled `backend/media-backend.py` using a path
-resolved relative to its own installed location. The backend listens to D-Bus
-signals and streams state to the QML service as JSON lines. Its package has no
-player-specific dependency beyond the optional mpv IPC integration.
+The service uses Quickshell's MPRIS API, short-lived `busctl` calls plus a
+D-Bus signal monitor for TrackList, and Quickshell's Unix socket for the
+optional mpv playlist. It does not launch a Python or Rust backend.
 
 Validate the plugin and lint the QML before release:
 
@@ -106,8 +97,7 @@ qmllint -I /usr/share/omarchy/shell BarWidget.qml Preview.qml Service.qml
 omarchy plugin remove io.github.superb-striker.media-controller
 ```
 
-Removing the plugin does not remove the system Python packages or your mpv
-configuration.
+Removing the plugin does not change your mpv configuration.
 
 ## License
 

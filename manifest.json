@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.superb-striker.media-controller",
   "name": "Media Controller",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Nipun Kothari",
   "license": "MIT",
   "description": "Artwork-focused MPRIS media controls with source switching, seeking, and track lists.",
