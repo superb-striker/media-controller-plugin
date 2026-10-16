@@ -1,99 +1,119 @@
-# Media Controller for Omarchy
+# Now Playing for Omarchy
 
-An artwork-focused bar widget for MPRIS media players. Hover for a compact
-preview; click the preview to pin a larger view with source selection and a
-track list. The service ships as Quickshell code in this repository.
+An artwork-first media widget for the Omarchy bar. Keep the essentials in the
+bar, hover over the song title for a quick look, or click the preview to pin
+full controls. It works with **kew**, mpv, and other players that expose MPRIS.
 
-## Features
+![Compact now-playing controls in the Omarchy bar](screenshots/compact-bar.png)
 
-- Discovers running MPRIS players and lets you switch between them, including
-  separate instances of the same player.
-- Uses MPRIS capabilities for play/pause, previous/next, seeking, and TrackList
-  selection. Unsupported controls are disabled.
-- Shows album art when available and falls back to the current Omarchy theme.
-- Uses mpv IPC, when configured, for mpv's playlist and local artwork fallback.
-  Other players work through MPRIS without mpv.
-- Runs one Quickshell service for the whole plugin, including multiple monitors.
+## A preview that stays out of the way
 
-## Requirements
+Hovering over the title opens a small artwork-led preview. Moving away closes
+it; clicking the preview pins the larger player until you click outside or
+press Escape. There is no growing animation.
 
-- Omarchy Quattro with plugin support
-- An MPRIS-compatible media player
+<img src="screenshots/hover-preview.png" alt="Artwork-led hover preview with song details and playback controls" width="570">
 
-No extra package installation is needed on Omarchy. Quickshell handles normal
-MPRIS controls, and the service uses Omarchy's existing `busctl` (from
-systemd) for MPRIS TrackList, which Quickshell does not expose.
+The pinned view adds source switching, track position, seeking, and a
+collapsible **Track List**. The list starts closed and can include both
+previous and upcoming tracks.
+
+<img src="screenshots/kew-track-list.png" alt="Pinned preview showing kew and Firefox sources and kew's expanded track list" width="390">
+
+## Made for kew, without being tied to it
+
+kew exposes MPRIS TrackList, so you can browse its current list and jump
+directly to a track from the popup. If kew and another player are running,
+source chips let you choose which one this widget controls. Separate
+instances of the same player are listed individually.
+
+Other MPRIS players still get the artwork, metadata, and transport controls
+they support. A browser tab, for example, can be selected even if it does not
+offer a track list:
+
+<img src="screenshots/firefox-source.png" alt="Firefox selected as the active MPRIS source in the pinned preview" width="390">
+
+| Player | Playback and seeking | Track list |
+| --- | --- | --- |
+| **kew** | MPRIS controls | MPRIS TrackList, including jump-to-track |
+| **mpv** | MPRIS controls when enabled | Its playlist through the optional mpv IPC socket |
+| **Other MPRIS players** | Whatever capabilities they expose | Shown only if they expose TrackList |
+
+The five popup controls are **previous · back 10s · play/pause · forward 10s ·
+next**. Unsupported actions are disabled, not sent blindly. The progress bar
+is clickable only when the selected player supports seeking.
+
+Artwork fills the preview and softly colors its background. If there is no
+artwork, a media placeholder appears and the background returns to the
+current Omarchy theme. Local cover files next to a song are also considered
+when the player does not supply art.
 
 ## Install
 
-From a local checkout:
+Requires Omarchy Quattro with its Quickshell plugin system and at least one
+MPRIS-capable player. There are **no extra packages to install** on Omarchy:
+the plugin uses Quickshell and the system's existing `busctl` for TrackList.
+It does not need Python, Rust, `playerctl`, or a separately installed backend.
 
-```bash
-omarchy plugin validate .
+From this checkout:
+
+```sh
 omarchy plugin add "$PWD" --enable
 ```
 
-After publishing this repository, use its GitHub URL instead:
+After the repository is published at the URL below, the same install is:
 
-```bash
+```sh
 omarchy plugin add https://github.com/superb-striker/media-controller-plugin.git --enable
 ```
 
-Omarchy places the widget in the right bar section by default. If an older
-manual installation of `media-title`, `media-prev`, `media-play-pause`, and
-`media-next` is still configured in your bar, remove those entries to avoid
-duplicate controls.
+The widget is placed in the right bar section by default. If you already use
+the older manual `media-prev`, `media-play-pause`, `media-next`, and
+`media-title` widgets, remove those bar entries to avoid duplicates. This
+plugin does not alter your existing bar configuration for you.
 
-The plugin uses Omarchy's own-service API, which the built-in bar exposes to
-third-party widgets. Some replacement bars may not expose that service API.
+## Optional mpv playlist support
 
-## Optional mpv playlist integration
+mpv is included with Omarchy. Its normal controls use MPRIS; to expose mpv's
+playlist in the popup, add these lines to `~/.config/mpv/mpv.conf` (or include
+the bundled [example](config/mpv.conf)):
 
-mpv is included with Omarchy. To expose its playlist to this plugin, add the
-settings in [`config/mpv.conf`](config/mpv.conf) to your mpv configuration or
-include that file from `~/.config/mpv/mpv.conf`:
-
-```text
+```ini
 input-ipc-server=/tmp/mpv-socket
 cover-art-auto=exact
 ```
 
-Restart mpv after changing its configuration. Without the socket, mpv still
-works through MPRIS if its MPRIS integration is enabled; the extra IPC playlist
-features are simply unavailable. Set `MPV_SOCKET` if your socket has another
-path.
+Restart mpv afterward. Without the socket, mpv still works as an MPRIS
+source when its MPRIS integration is enabled; the extra playlist view is
+simply unavailable. If you use a different socket path, set `MPV_SOCKET`
+in the environment that launches Omarchy shell.
 
-## Controls
+## How it works
 
-- Previous track, play/pause, and next track are visible in the bar.
-- Hover over the title to see the minimal preview. Click inside to pin it;
-  Escape or clicking outside closes it.
-- The pinned preview has source selection and a track list. The list starts
-  collapsed and includes previous and upcoming entries when the player exposes
-  them through MPRIS TrackList or mpv IPC.
-- Seek buttons step backward/forward ten seconds. Seeking is disabled when the
-  selected player does not report `CanSeek`.
+`Service.qml` is shared across bar instances. Quickshell supplies MPRIS
+discovery and playback controls. Because Quickshell does not expose MPRIS
+TrackList, the service reads that interface through the already-installed
+`busctl` and watches for changes. Quickshell's Unix socket handles the
+optional mpv playlist. Players without either kind of list simply hide that
+part of the UI.
 
-The selected source is stored in the user runtime directory while the session
-is active.
+Your selected source is remembered for the current login session. No song
+files are changed by installation; selecting a track or using playback
+controls acts on the player you choose.
 
 ## Development
 
-The plugin is composed of `BarWidget.qml`, `Preview.qml`, and `Service.qml`.
-The service uses Quickshell's MPRIS API, short-lived `busctl` calls plus a
-D-Bus signal monitor for TrackList, and Quickshell's Unix socket for the
-optional mpv playlist. It does not launch a Python or Rust backend.
-
-Validate the plugin and lint the QML before release:
-
-```bash
+```sh
 omarchy plugin validate .
 qmllint -I /usr/share/omarchy/shell BarWidget.qml Preview.qml Service.qml
 ```
 
-## Removal
+The plugin ID remains `io.github.superb-striker.media-controller` so an
+existing installation can update without changing its configuration.
 
-```bash
+## Remove
+
+```sh
 omarchy plugin remove io.github.superb-striker.media-controller
 ```
 
@@ -101,4 +121,5 @@ Removing the plugin does not change your mpv configuration.
 
 ## License
 
-MIT
+MIT. The music and artwork visible in the screenshots belong to their
+respective creators and are shown only to demonstrate the interface.

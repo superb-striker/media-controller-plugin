@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "io.github.superb-striker.media-controller",
-  "name": "Media Controller",
+  "name": "Now Playing for Omarchy",
   "version": "0.2.0",
   "author": "Nipun Kothari",
   "license": "MIT",
-  "description": "Artwork-focused MPRIS media controls with source switching, seeking, and track lists.",
+  "description": "Artwork-first MPRIS controls with a hover preview, source switching, and track lists.",
   "kinds": ["service", "bar-widget"],
   "keepLoaded": true,
   "entryPoints": {
@@ -13,8 +13,8 @@
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "Media Controller",
-    "description": "Now-playing controls and an artwork preview for MPRIS players",
+    "displayName": "Now Playing",
+    "description": "Artwork-first controls and a hover preview for MPRIS players",
     "category": "Media",
     "defaultSection": "right",
     "allowMultiple": false,
