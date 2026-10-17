@@ -33,7 +33,7 @@ BarWidget {
   Row {
     id: controls
     anchors.fill: parent
-    spacing: 2
+    spacing: Math.max(1, Math.round(root.barSize / 13))
 
     TransportButton {
       glyph: "󰒮"
@@ -72,7 +72,7 @@ BarWidget {
       text: parent.glyph
       color: root.bar ? root.bar.foreground : "white"
       font.family: root.bar ? root.bar.fontFamily : undefined
-      font.pixelSize: root.settings && root.settings.fontSize ? root.settings.fontSize : 12
+      font.pixelSize: preview.fontPx
     }
     MouseArea {
       anchors.fill: parent

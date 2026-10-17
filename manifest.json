@@ -2,11 +2,14 @@
   "schemaVersion": 1,
   "id": "io.github.superb-striker.media-controller",
   "name": "Now Playing for Omarchy",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Nipun Kothari",
   "license": "MIT",
   "description": "Artwork-first MPRIS controls with a hover preview, source switching, and track lists.",
-  "kinds": ["service", "bar-widget"],
+  "kinds": [
+    "service",
+    "bar-widget"
+  ],
   "keepLoaded": true,
   "entryPoints": {
     "service": "Service.qml",
@@ -19,12 +22,24 @@
     "defaultSection": "right",
     "allowMultiple": false,
     "defaults": {
-      "width": 180,
-      "fontSize": 12
+      "width": 0,
+      "fontSize": 0
     },
     "schema": [
-      { "key": "width", "type": "int", "label": "Title width", "min": 100, "max": 400 },
-      { "key": "fontSize", "type": "int", "label": "Font size", "min": 9, "max": 18 }
+      {
+        "key": "width",
+        "type": "int",
+        "label": "Title width (0 = automatic)",
+        "min": 0,
+        "max": 400
+      },
+      {
+        "key": "fontSize",
+        "type": "int",
+        "label": "Font size (0 = automatic)",
+        "min": 0,
+        "max": 18
+      }
     ]
   }
 }

@@ -1,4 +1,5 @@
 import QtQuick
+import qs.Commons
 import QtQuick.Effects
 import QtQuick.Window
 import Quickshell
@@ -10,11 +11,19 @@ Item {
   property var settings
   property var mediaService
   property var hostWidget
-  property int fixedWidth: (settings && settings.width) ? settings.width : 180
-  property int fontPx: (settings && settings.fontSize) ? settings.fontSize : 12
-  property int popupWidth: 340
-  property int hoverPopupWidth: 300
-  property int popupMargin: 8
+  // QML dimensions are logical pixels; Qt applies monitor scaling itself.
+  readonly property int fontPx: settings && settings.fontSize > 0 ? settings.fontSize : Math.max(1, Style.font.body - 1)
+  readonly property real layoutScale: Math.max(fontPx / 12, Style.font.body / 12, (bar ? bar.barSize : Style.bar.sizeHorizontal) / 26)
+  // Cap the title against the host window in logical pixels. Higher monitor
+  // scaling reduces this width, leaving room for the other bar widgets.
+  readonly property real availableWidth: root.Window.window && root.Window.window.width > 0
+    ? root.Window.window.width : root.Screen.width
+  readonly property int automaticWidth: Math.max(1, Math.round(Math.min(dp(150), availableWidth > 0 ? availableWidth * 0.10 : dp(150))))
+  readonly property int fixedWidth: settings && settings.width > 0 ? settings.width : automaticWidth
+  readonly property int popupWidth: dp(340)
+  readonly property int hoverPopupWidth: dp(300)
+  readonly property int popupMargin: dp(8)
+  function dp(value) { return Math.max(1, Math.round(value * layoutScale)) }
   readonly property var media: mediaService ? mediaService.media : ({
     available: false, playing: false, title: "", artist: "", album: "",
     art: "", position: 0, duration: 0, queue: [], hasQueue: false,
@@ -31,7 +40,7 @@ Item {
   // Every MPRIS source can show the popup. Seeking and track lists are
   // enabled only when that source exposes the relevant capability.
   property bool popupEligible: root.hasPlayer
-  implicitHeight: bar ? bar.barSize : 28
+  implicitHeight: bar ? bar.barSize : Style.bar.sizeHorizontal
   implicitWidth: hasPlayer ? fixedWidth : 0
   visible: hasPlayer
   clip: true
@@ -80,10 +89,10 @@ Item {
     anchor.item: root.Window.contentItem
     anchor.edges: Edges.Top | Edges.Right
     anchor.gravity: Edges.Bottom | Edges.Left
-    anchor.margins.top: (bar ? bar.barSize : 28) + root.popupMargin
+    anchor.margins.top: (bar ? bar.barSize : Style.bar.sizeHorizontal) + root.popupMargin
     anchor.adjustment: PopupAdjustment.All
     implicitWidth: root.popupPinned ? root.popupWidth : root.hoverPopupWidth
-    implicitHeight: contentColumn.implicitHeight + 32
+    implicitHeight: contentColumn.implicitHeight + root.dp(32)
     visible: root.popupOpen && root.popupEligible
     grabFocus: root.popupPinned
     color: "transparent"
@@ -102,9 +111,9 @@ Item {
     Rectangle {
       id: popupFocusItem
       anchors.fill: parent
-      radius: 18
+      radius: root.dp(18)
       color: root.popupBackground
-      border.width: 1
+      border.width: root.dp(1)
       border.color: Qt.alpha(root.popupForeground, 0.16)
       clip: true
       focus: true
@@ -152,12 +161,12 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 16
-        spacing: root.popupPinned ? 12 : 10
+        anchors.margins: root.dp(16)
+        spacing: root.popupPinned ? root.dp(12) : root.dp(10)
         Flickable {
           id: sourceList
           width: parent.width
-          height: visible ? 26 : 0
+          height: visible ? root.dp(26) : 0
           visible: root.popupPinned && root.media.sources && root.media.sources.length > 1
           contentWidth: sourceRow.implicitWidth
           contentHeight: height
@@ -165,24 +174,24 @@ Item {
           clip: true
           Row {
             id: sourceRow
-            spacing: 6
+            spacing: root.dp(6)
             Repeater {
               model: root.media.sources
               delegate: Rectangle {
-                height: 22
-                width: Math.min(sourceLabel.implicitWidth + 16, sourceList.width * 0.8)
-                radius: 11
+                height: root.dp(22)
+                width: Math.min(sourceLabel.implicitWidth + root.dp(16), sourceList.width * 0.8)
+                radius: root.dp(11)
                 color: modelData.selected ? root.popupForeground : Qt.alpha(root.popupForeground, 0.10)
                 Text {
                   id: sourceLabel
                   anchors.centerIn: parent
-                  width: parent.width - 16
+                  width: parent.width - root.dp(16)
                   textFormat: Text.PlainText
                   text: modelData.label
                   elide: Text.ElideRight
                   color: modelData.selected ? root.popupBackground : Qt.alpha(root.popupForeground, 0.78)
                   font.family: bar ? bar.fontFamily : undefined
-                  font.pixelSize: 10
+                  font.pixelSize: Style.font.caption
                   font.bold: modelData.selected
                 }
                 MouseArea {
@@ -196,8 +205,8 @@ Item {
         }
         Rectangle {
           width: parent.width
-          height: root.popupPinned ? 164 : 118
-          radius: 14
+          height: root.popupPinned ? root.dp(164) : root.dp(118)
+          radius: root.dp(14)
           clip: true
           color: Qt.alpha(root.popupForeground, 0.07)
           Image {
@@ -211,34 +220,34 @@ Item {
           }
           Column {
             anchors.centerIn: parent
-            spacing: 8
+            spacing: root.dp(8)
             visible: artwork.status !== Image.Ready
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
               text: "󰝚"
               color: Qt.alpha(root.popupForeground, 0.42)
               font.family: bar ? bar.fontFamily : undefined
-              font.pixelSize: 48
+              font.pixelSize: root.dp(48)
             }
             Text {
               anchors.horizontalCenter: parent.horizontalCenter
               text: "No artwork"
               color: Qt.alpha(root.popupForeground, 0.5)
               font.family: bar ? bar.fontFamily : undefined
-              font.pixelSize: 11
+              font.pixelSize: Style.font.bodySmall
             }
           }
         }
         Column {
           width: parent.width
-          spacing: 4
+          spacing: root.dp(4)
           Text {
             width: parent.width
             textFormat: Text.PlainText
             text: root.media.title
             color: root.popupForeground
             font.family: bar ? bar.fontFamily : undefined
-            font.pixelSize: root.popupPinned ? 17 : 15
+            font.pixelSize: root.popupPinned ? Style.font.heading : Style.font.title
             font.bold: true
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
@@ -249,7 +258,7 @@ Item {
             text: root.media.artist || "Unknown artist"
             color: Qt.alpha(root.popupForeground, 0.72)
             font.family: bar ? bar.fontFamily : undefined
-            font.pixelSize: 12
+            font.pixelSize: Style.font.body
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
           }
@@ -260,21 +269,21 @@ Item {
             visible: root.popupPinned && text.length > 0
             color: Qt.alpha(root.popupForeground, 0.5)
             font.family: bar ? bar.fontFamily : undefined
-            font.pixelSize: 10
+            font.pixelSize: Style.font.caption
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
           }
         }
         Rectangle {
           width: parent.width
-          height: root.media.duration > 0 ? 4 : 0
-          radius: 2
+          height: root.media.duration > 0 ? root.dp(4) : 0
+          radius: root.dp(2)
           visible: height > 0
           color: Qt.alpha(root.popupForeground, 0.16)
           Rectangle {
             width: parent.width * (root.media.duration > 0 ? Math.min(1, root.media.position / root.media.duration) : 0)
             height: parent.height
-            radius: 2
+            radius: root.dp(2)
             color: root.popupForeground
           }
           MouseArea {
@@ -290,41 +299,41 @@ Item {
           text: formatTime(root.media.position) + " / " + formatTime(root.media.duration)
           color: Qt.alpha(root.popupForeground, 0.58)
           font.family: bar ? bar.fontFamily : undefined
-          font.pixelSize: 10
+          font.pixelSize: Style.font.caption
           horizontalAlignment: Text.AlignHCenter
         }
         Row {
           anchors.horizontalCenter: parent.horizontalCenter
-          height: 44
-          spacing: 9
-          MediaButton { width: 38; height: 38; glyph: "󰒮"; enabled: !!root.media.canGoPrevious; onClicked: root.send("previous") }
+          height: root.dp(44)
+          spacing: root.dp(9)
+          MediaButton { width: root.dp(38); height: root.dp(38); glyph: "󰒮"; enabled: !!root.media.canGoPrevious; onClicked: root.send("previous") }
           MediaButton {
-            width: 36; height: 36
+            width: root.dp(36); height: root.dp(36)
             glyph: "−" + (root.media.seekStep || 10)
             enabled: !!root.media.canSeek
             compact: true
             onClicked: root.seekRelative(-(root.media.seekStep || 10))
           }
           MediaButton {
-            width: 44
-            height: 44
+            width: root.dp(44)
+            height: root.dp(44)
             glyph: root.media.playing ? "󰏤" : "󰐊"
             filled: true
             enabled: !!root.media.canPlayPause
             onClicked: root.send("play-pause")
           }
           MediaButton {
-            width: 36; height: 36
+            width: root.dp(36); height: root.dp(36)
             glyph: "+" + (root.media.seekStep || 10)
             enabled: !!root.media.canSeek
             compact: true
             onClicked: root.seekRelative(root.media.seekStep || 10)
           }
-          MediaButton { width: 38; height: 38; glyph: "󰒭"; enabled: !!root.media.canGoNext; onClicked: root.send("next") }
+          MediaButton { width: root.dp(38); height: root.dp(38); glyph: "󰒭"; enabled: !!root.media.canGoNext; onClicked: root.send("next") }
         }
         Item {
           width: parent.width
-          height: 20
+          height: root.dp(20)
           visible: root.popupPinned && root.media.hasQueue
           MouseArea {
             anchors.fill: parent
@@ -333,19 +342,19 @@ Item {
             Row {
               anchors.left: parent.left
               anchors.verticalCenter: parent.verticalCenter
-              spacing: 6
+              spacing: root.dp(6)
               Text {
                 text: "TRACK LIST"
                 color: Qt.alpha(root.popupForeground, 0.5)
                 font.family: bar ? bar.fontFamily : undefined
-                font.pixelSize: 10
+                font.pixelSize: Style.font.caption
                 font.bold: true
               }
               Text {
                 text: "(" + root.media.queue.length + ")"
                 color: Qt.alpha(root.popupForeground, 0.4)
                 font.family: bar ? bar.fontFamily : undefined
-                font.pixelSize: 10
+                font.pixelSize: Style.font.caption
               }
             }
             Text {
@@ -353,44 +362,44 @@ Item {
               anchors.verticalCenter: parent.verticalCenter
               text: root.queueExpanded ? "󰅃" : "󰅀"
               color: Qt.alpha(root.popupForeground, 0.5)
-              font.pixelSize: 12
+              font.pixelSize: Style.font.body
             }
           }
         }
         ListView {
           id: queueView
           width: parent.width
-          height: (root.popupPinned && root.media.hasQueue && root.queueExpanded) ? Math.min(180, root.media.queue.length * 40) : 0
+          height: (root.popupPinned && root.media.hasQueue && root.queueExpanded) ? Math.min(root.dp(180), root.media.queue.length * root.dp(40)) : 0
           clip: true
-          spacing: 2
+          spacing: root.dp(2)
           visible: height > 0
           model: root.media.queue
           delegate: Rectangle {
             width: queueView.width
-            height: 38
-            radius: 8
+            height: root.dp(38)
+            radius: root.dp(8)
             color: modelData.current ? Qt.alpha(root.popupForeground, 0.14) : (rowArea.containsMouse ? Qt.alpha(root.popupForeground, 0.08) : "transparent")
             Rectangle {
               visible: modelData.current
-              width: 3
-              height: parent.height - 12
+              width: root.dp(3)
+              height: parent.height - root.dp(12)
               anchors.verticalCenter: parent.verticalCenter
               anchors.left: parent.left
-              anchors.leftMargin: 4
-              radius: 1.5
+              anchors.leftMargin: root.dp(4)
+              radius: root.dp(1.5)
               color: root.popupForeground
             }
             Text {
               anchors.left: parent.left
-              anchors.leftMargin: modelData.current ? 16 : 10
+              anchors.leftMargin: modelData.current ? root.dp(16) : root.dp(10)
               anchors.right: parent.right
-              anchors.rightMargin: 10
+              anchors.rightMargin: root.dp(10)
               anchors.verticalCenter: parent.verticalCenter
               textFormat: Text.PlainText
               text: modelData.title
               color: modelData.current ? root.popupForeground : Qt.alpha(root.popupForeground, 0.7)
               font.family: bar ? bar.fontFamily : undefined
-              font.pixelSize: 12
+              font.pixelSize: Style.font.body
               font.bold: modelData.current
               elide: Text.ElideRight
             }
@@ -420,7 +429,7 @@ Item {
       text: parent.glyph
       color: parent.filled ? root.popupBackground : root.popupForeground
       font.family: bar ? bar.fontFamily : undefined
-      font.pixelSize: parent.compact ? 11 : (parent.width > 40 ? 20 : 16)
+      font.pixelSize: parent.compact ? Style.font.bodySmall : (parent.filled ? root.dp(20) : Style.font.heading)
       font.bold: parent.compact
     }
     MouseArea {

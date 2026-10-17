@@ -68,6 +68,21 @@ omarchy plugin add https://github.com/superb-striker/media-controller-plugin.git
 
 The widget is placed in the right bar section by default, which can be changed in `~/.config/omarchy/shell.json`
 
+Bar text defaults to one logical pixel smaller than Omarchy's body text and
+follows theme changes automatically. Popup text uses shared theme sizes. Playback buttons
+follow the bar height. Automatic title width starts at 150 logical pixels for
+a 12px body font and 26px bar, scales with the font and bar size, and is capped
+at 10% of the host bar window width. The cap shrinks as display scaling reduces
+the available logical width. Long titles are elided. Popup spacing and controls scale with the font and bar size.
+Qt handles monitor scaling, so no per-monitor scale setting is required.
+
+The optional `width` and `fontSize` settings default to `0` (automatic). Positive
+values override the title width and bar text size in logical pixels. If an older
+configuration explicitly sets `180`/`12` or other values, remove those settings
+or set them to `0` to follow the theme. Popup text uses the theme's caption, body,
+and heading sizes.
+
+
 ## Optional mpv playlist support
 
 mpv is included with Omarchy. Its normal controls use MPRIS; to expose mpv's
