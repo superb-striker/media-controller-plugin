@@ -39,6 +39,7 @@ Item {
   Text {
     id: titleText
     anchors.fill: parent
+    textFormat: Text.PlainText
     text: root.media.title + (root.media.artist ? " - " + root.media.artist : "")
     color: bar ? bar.foreground : "white"
     font.family: bar ? bar.fontFamily : undefined
@@ -176,6 +177,7 @@ Item {
                   id: sourceLabel
                   anchors.centerIn: parent
                   width: parent.width - 16
+                  textFormat: Text.PlainText
                   text: modelData.label
                   elide: Text.ElideRight
                   color: modelData.selected ? root.popupBackground : Qt.alpha(root.popupForeground, 0.78)
@@ -232,6 +234,7 @@ Item {
           spacing: 4
           Text {
             width: parent.width
+            textFormat: Text.PlainText
             text: root.media.title
             color: root.popupForeground
             font.family: bar ? bar.fontFamily : undefined
@@ -242,6 +245,7 @@ Item {
           }
           Text {
             width: parent.width
+            textFormat: Text.PlainText
             text: root.media.artist || "Unknown artist"
             color: Qt.alpha(root.popupForeground, 0.72)
             font.family: bar ? bar.fontFamily : undefined
@@ -251,6 +255,7 @@ Item {
           }
           Text {
             width: parent.width
+            textFormat: Text.PlainText
             text: root.media.album || ""
             visible: root.popupPinned && text.length > 0
             color: Qt.alpha(root.popupForeground, 0.5)
@@ -381,6 +386,7 @@ Item {
               anchors.right: parent.right
               anchors.rightMargin: 10
               anchors.verticalCenter: parent.verticalCenter
+              textFormat: Text.PlainText
               text: modelData.title
               color: modelData.current ? root.popupForeground : Qt.alpha(root.popupForeground, 0.7)
               font.family: bar ? bar.fontFamily : undefined
