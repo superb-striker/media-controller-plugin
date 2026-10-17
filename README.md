@@ -41,7 +41,9 @@ offer a track list:
 
 The five popup controls are **previous · back 10s · play/pause · forward 10s ·
 next**. Unsupported actions are disabled, not sent blindly. The progress bar
-is clickable only when the selected player supports seeking.
+is clickable only when the selected player supports seeking. If a player briefly
+stops reporting track length after a seek, the widget keeps the last valid
+duration for that track instead of filling the bar with elapsed time.
 
 Artwork fills the preview and softly colors its background. 
 If there is no artwork, a media placeholder appears and the background returns to the current Omarchy theme. 

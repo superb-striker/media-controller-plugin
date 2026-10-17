@@ -39,6 +39,7 @@ Item {
   readonly property string artProbeSource: artCandidateIndex < artCandidates.length
     ? artCandidates[artCandidateIndex] : ""
   property var media: emptyState()
+  property var durationCache: ({})
 
   function emptyState() {
     return { available: false, playing: false, title: "", artist: "", album: "",
@@ -88,6 +89,22 @@ Item {
         candidates.push("file://" + (directory + name + ext).split("/").map(encodeURIComponent).join("/"))
     artCandidates = candidates
   }
+  function durationFor(p) {
+    const metadata = p.metadata || {}
+    const source = String(p.dbusName || "")
+    // Firefox may briefly omit mpris:length after a seek. Quickshell then
+    // exposes position as length, which makes the progress bar appear full.
+    const track = String(metadata["xesam:url"] || "") ||
+      [String(metadata["mpris:trackid"] || ""), String(p.trackTitle || ""),
+       String(p.trackArtist || ""), String(p.trackAlbum || "")].join("\u0000")
+    const reported = p.lengthSupported ? Number(p.length) : 0
+    if (Number.isFinite(reported) && reported > 0) {
+      durationCache[source] = { track: track, duration: reported }
+      return reported
+    }
+    const cached = durationCache[source]
+    return cached && cached.track === track ? cached.duration : 0
+  }
   function rebuild() {
     const p = activePlayer
     if (!p) { media = emptyState(); return }
@@ -105,7 +122,7 @@ Item {
     media = { available: true, playing: !!p.isPlaying,
       title: p.trackTitle || label(p), artist: p.trackArtist || "",
       album: p.trackAlbum || "", art: String(p.trackArtUrl || localArt || ""),
-      position: Number(p.position || 0), duration: Number(p.length || 0),
+      position: Number(p.position || 0), duration: durationFor(p),
       queue: queue, hasQueue: queue.length > 0, source: sourceName, sources: sources,
       canSeek: !!p.canSeek, canGoNext: !!p.canGoNext,
       canGoPrevious: !!p.canGoPrevious,
@@ -188,6 +205,8 @@ Item {
     function onTrackChanged() { queueRefresh.restart(); root.rebuild() }
     function onPlaybackStateChanged() { root.rebuild() }
     function onPositionChanged() { root.rebuild() }
+    function onLengthChanged() { root.rebuild() }
+    function onLengthSupportedChanged() { root.rebuild() }
     function onCanSeekChanged() { root.rebuild() }
     function onCanGoNextChanged() { root.rebuild() }
     function onCanGoPreviousChanged() { root.rebuild() }

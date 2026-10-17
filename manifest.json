@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.superb-striker.media-controller",
   "name": "Now Playing for Omarchy",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "Nipun Kothari",
   "license": "MIT",
   "description": "Artwork-first MPRIS controls with a hover preview, source switching, and track lists.",
