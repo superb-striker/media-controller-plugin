@@ -1,4 +1,4 @@
-# Now Playing for Omarchy
+# Now Playing for Omarchy [![Built for Omarchy: Plugin](https://raw.githubusercontent.com/tcballard/omarchy-badges/75975e5b5bf75e7ede3764bcd2950046f7abfe2c/badges/v1/omarchy-plugin.svg)](https://github.com/tcballard/omarchy-badges)
 
 An artwork-first media widget for the Omarchy bar. Keep the essentials in the
 bar, hover over the song title for a quick look, or click the preview to pin
